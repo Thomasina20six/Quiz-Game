@@ -19,7 +19,7 @@ const quizQuestions = [
   {
     question: "What is the capital of France?",
     answers: [
-      { text: "London", correct: false },
+      { text: "Washington", correct: false },
       { text: "Berlin", correct: false },
       { text: "Paris", correct: true },
       { text: "Tokyo", correct: false },
