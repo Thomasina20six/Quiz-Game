@@ -22,7 +22,7 @@ const quizQuestions = [
       { text: "London", correct: false },
       { text: "Berlin", correct: false },
       { text: "Paris", correct: true },
-      { text: "Madrid", correct: false },
+      { text: "Tokyo", correct: false },
     ],
   },
   {
