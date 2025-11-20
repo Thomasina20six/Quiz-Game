@@ -48,7 +48,7 @@ const quizQuestions = [
     answers: [
       { text: "Java", correct: false },
       { text: "Python", correct: false },
-      { text: "Banana", correct: true },
+      { text: "Emerald", correct: true },
       { text: "JavaScript", correct: false },
     ],
   },
