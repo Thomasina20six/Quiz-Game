@@ -31,7 +31,7 @@ const quizQuestions = [
       { text: "Venus", correct: false },
       { text: "Mars", correct: true },
       { text: "Jupiter", correct: false },
-      { text: "Saturn", correct: false },
+      { text: "Mercury", correct: false },
     ],
   },
   {
