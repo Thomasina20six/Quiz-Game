@@ -9,12 +9,14 @@
 <body>
     <div class="container">
 
+        <!--start screen-->
         <div class="screen active" id="start-screen">
             <h1>Quiz Time!</h1>
             <p>Test Your Knowledge</p>
             <button id="start-btn">Start Quiz</button>
         </div>
 
+        <!--quiz screen-->
         <div class="screen" id="quiz-screen">
             <div class="quiz-header">
                 <h2 id="question-text">Question goes here</h2>
@@ -23,7 +25,7 @@
                         Question <span id="current-question">1</span> of <span id="total-questions">5</span>
                     </p>
                     <p>
-                        Score: <spam id="score">0</spam>
+                        Score: <span id="score">0</span>
                     </p>
                 </div>
             </div>
@@ -38,6 +40,7 @@
             </div>
         </div>
 
+        <!--result screen-->
         <div id="result-screen" class="screen">
             <h1>Quiz Result</h1>
             <div class="result-info">
