@@ -1,64 +1,57 @@
 //DOM elements
 const startScreen = document.getElementById("start-screen");
+const topicScreen = document.getElementById("topic-screen");
 const quizScreen = document.getElementById("quiz-screen");
 const resultScreen = document.getElementById("result-screen");
+
 const startButton = document.getElementById("start-btn");
+const restartButton = document.getElementById("restart-btn");
+
 const questionText = document.getElementById("question-text");
 const answersContainer = document.getElementById("answers-container");
+const progressBar = document.getElementById("progress");
+
 const currentQuestionSpan = document.getElementById("current-question");
 const totalQuestionsSpan = document.getElementById("total-questions");
+
 const scoreSpan = document.getElementById("score");
 const finalScoreSpan = document.getElementById("final-score");
 const maxScoreSpan = document.getElementById("max-score");
 const resultMessage = document.getElementById("result-message");
-const restartButton = document.getElementById("restart-btn");
-const progressBar = document.getElementById("progress");
+//Topic screen
+const topicChip = document.getElementById("topic-chip");
+const topicSub = document.getElementById("topic-sub");
+// --- Config ---
+const API_URL = "http://localhost:3000/api/quiz"; // or "/api/quiz" if you serve index.html from Express
+const COUNT = 3; // always 3 questions
 
 // Quiz questions
-const quizQuestions = [
+const FALLBACK_QUESTIONS = [
   {
-    question: "What is the capital of France?",
+    question: "What is a black hole?",
     answers: [
-      { text: "Seoul", correct: false },
-      { text: "Berlin", correct: false },
-      { text: "Paris", correct: true },
-      { text: "Tokyo", correct: false },
+      { text: "A star that shines very brightly", correct: false },
+      { text: "A region in space where gravity is so strong that nothing can escape, not even light", correct: true },
+      { text: "A hole drilled by humans in outer space", correct: false },
+      { text: "A type of asteroid orbiting a planet", correct: false },
     ],
   },
   {
-    question: "Which planet is known as the Red Planet?",
+    question: "What is the boundary around a black hole called, beyond which nothing can escape?",
     answers: [
-      { text: "Venus", correct: false },
-      { text: "Mars", correct: true },
-      { text: "Jupiter", correct: false },
-      { text: "Mercury", correct: false },
+      { text: "Event Horizon", correct: true },
+      { text: "Cosmic Shield", correct: false },
+      { text: "Photon Belt", correct: false },
+      { text: "Singularity Shell", correct: false },
     ],
   },
   {
-    question: "What is the largest ocean on Earth?",
+    question: "Who first predicted the existence of black holes through the theory of general relativity?",
     answers: [
-      { text: "Atlantic Ocean", correct: false },
-      { text: "Indian Ocean", correct: false },
-      { text: "Arctic Ocean", correct: false },
-      { text: "Pacific Ocean", correct: true },
-    ],
-  },
-  {
-    question: "Which of these is NOT a programming language?",
-    answers: [
-      { text: "Java", correct: false },
-      { text: "Python", correct: false },
-      { text: "Emerald", correct: true },
-      { text: "JavaScript", correct: false },
-    ],
-  },
-  {
-    question: "What is the chemical symbol for gold?",
-    answers: [
-      { text: "Go", correct: false },
-      { text: "Gd", correct: false },
-      { text: "Au", correct: true },
-      { text: "Ag", correct: false },
+      { text: "Isaac Newton", correct: false },
+      { text: "Stephen Hawking", correct: false },
+      { text: "Albert Einstein", correct: true },
+      { text: "Edwin Hubble", correct: false },
     ],
   },
 ];
@@ -67,26 +60,84 @@ const quizQuestions = [
 let currentQuestionIndex =0;
 let score = 0;
 let answerDisabled = false;
+let quizQuestions =[];
 
 //limit 5 because thats the number of quiz in quizQuestions
-totalQuestionsSpan.textContent = quizQuestions.length;
-maxScoreSpan.textContent = quizQuestions.length;
+//totalQuestionsSpan.textContent = quizQuestions.length;
+//maxScoreSpan.textContent = quizQuestions.length;
 
 //event listener
 startButton.addEventListener("click", startQuiz);
 restartButton.addEventListener("click", restartQuiz);
 
-function startQuiz(){
+// Helpers
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length -1;i>0;i--){
+    const j =Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+async function getQuizFromApi({topic = "", difficulty = "medium", count = COUNT} ={}){
+  const url = new URL(API_URL, window.location.origin);
+  if(topic) url.searchParams.set("topic", topic); //get random topic
+  url.searchParams.set("difficulty", difficulty);
+  url.searchParams.set("count", count);
+
+  const res = await fetch(url.toString());
+  if(!res.ok) throw new Error(`Quiz API error: ${res.status}`);
+
+  const data = await res.json();
+  if(!data || !Array.isArray(data.questions)) throw new Error("Invalid quiz payload");
+
+  const mapped = data.questions.map((q) => {
+    const answers = q.choices.map((text, i) => ({text, correct: i === q.correctIndex}));
+    return {question:q.question,answers: shuffle(answers)};
+  });
+
+  return { topic: data.topic || topic || "General knowledge", questions: mapped };
+}
+
+// this change too
+async function startQuiz(){
   //console.log("quiz started");
+  // reset state
   currentQuestionIndex=0;
   score=0;
   scoreSpan.textContent=0;
+  progressBar.style.width ="0%";
+
+  // 1) Show topic screen
+  const topicThisRun = DEFAULT_TOPIC;
+  topicChip.textContent = topicThisRun;
+  topicSub.textContent= `Generating ${COUNT} questions...`; 
 
   //chnage into quiz display
   startScreen.classList.remove("active");
-  quizScreen.classList.add("active");
+  resultScreen.classList.remove("active");
+  topicScreen.classList.add("active");
+  //quizScreen.classList.add("active");
 
-  showQuestion();
+  // 2) Generate with graceful fallback
+  try{
+    quizQuestions = await getQuizFromApi({topic:topicThisRun, count: COUNT});
+  } catch (e){
+    console.warn("Falling back to local Black-hole set:", e);
+    quizQuestions = FALLBACK_QUESTIONS
+  }
+
+  // 3) update totals based on fetch length
+  totalQuestionsSpan.textContent = quizQuestions.length;
+  maxScoreSpan.textContent = quizQuestions.length;
+
+  // 4) Small pause so the Topic screen is visible
+  setTimeout(() => {
+    topicScreen.classList.remove("active");
+    quizScreen.classList.add("active");
+    showQuestion();
+  }, 3000); //650
 }
 
 function showQuestion(){
@@ -94,7 +145,6 @@ function showQuestion(){
   answerDisabled = false;
 
   const currentQuestion = quizQuestions[currentQuestionIndex];
-
   currentQuestionSpan.textContent = currentQuestionIndex + 1;
 
   //fills the progress bar
@@ -102,7 +152,6 @@ function showQuestion(){
   progressBar.style.width = progressPercent + "%"; // change bar css width value to %
 
   questionText.textContent = currentQuestion.question
-
   answersContainer.innerHTML = ""; //clear the answer container
 
   // looping all the answers of a question
@@ -110,17 +159,14 @@ function showQuestion(){
     const button = document.createElement("button"); // create a answer button
     button.textContent = answer.text;
     button.classList.add("answer-btn");
-    
-    button.dataset.correct = answer.correct;
+    button.dataset.correct = String(answer.correct);
     button.addEventListener("click",selectAnswer)
-
     answersContainer.appendChild(button); // append the button into html
   });
 }
 
 function selectAnswer(event){
   if(answerDisabled) return;
-
   answerDisabled = true;
 
   const selectedButton = event.target;
@@ -148,7 +194,7 @@ function selectAnswer(event){
     }else{
       showResults();
     }
-  }, 1000)
+  }, 800)
 }
 
 function showResults(){
@@ -173,8 +219,8 @@ function showResults(){
 }
 
 function restartQuiz(){
-    //console.log("quiz re-started");
-    resultScreen.classList.remove("active");
-
-    startQuiz();
+  //console.log("quiz re-started");
+  resultScreen.classList.remove("active");
+  startScreen.classList.add("active");
+    //startQuiz();
 }
