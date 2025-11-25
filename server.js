@@ -1,8 +1,15 @@
 import express from "express";
 import OpenAI from "openai";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files (frontend)
+app.use(express.static(__dirname));
 
 // allow calls from your dev page on 127.0.0.1:5500 or localhost:5500
 app.use(cors({ origin: [/^http:\/\/(127\.0\.0\.1|localhost):5500$/] }));
