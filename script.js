@@ -118,9 +118,7 @@ async function getQuizFromApi({topic = "", difficulty = "medium", count = COUNT}
   return { topic: data.topic || topic || "General knowledge", questions: mapped };
 }
 
-// this change too
 async function startQuiz(){
-  //console.log("quiz started");
   // reset state
   currentQuestionIndex=0;
   score=0;
@@ -130,23 +128,25 @@ async function startQuiz(){
   // 1) Show topic screen
   //const topicThisRun = DEFAULT_TOPIC;
   topicChip.textContent = "Choosing a topic...";
-  topicSub.textContent= `Generating ${COUNT} questions...`; 
+  topicSub.textContent= ``; 
 
   //chnage into quiz display
   startScreen.classList.remove("active");
   resultScreen.classList.remove("active");
   topicScreen.classList.add("active");
-  //quizScreen.classList.add("active");
 
   // 2) Generate with graceful fallback
   try{
-    //quizQuestions = await getQuizFromApi({topic:topicThisRun, count: COUNT});
     const {topic, questions} = await getQuizFromApi({count: COUNT});
+    
     topicChip.textContent = topic; // show chosen topic
+    topicSub.textContent = `Generating ${COUNT} questions...`;
+    
     quizQuestions = questions;
   } catch (e){
     console.warn("Falling back to local set:", e);
     topicChip.textContent = "Black Holes"; // fallback topic
+    topicSub.textContent = `Generating ${COUNT} questions...`;
     quizQuestions = FALLBACK_QUESTIONS
   }
 
