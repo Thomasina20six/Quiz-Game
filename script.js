@@ -22,7 +22,7 @@ const resultMessage = document.getElementById("result-message");
 const topicChip = document.getElementById("topic-chip");
 const topicSub = document.getElementById("topic-sub");
 // --- Config ---
-const API_URL = "http://localhost:3000/api/quiz"; // or "/api/quiz" if you serve index.html from Express
+const API_URL = "/api/quiz";
 const COUNT = 5;
 
 // Quiz questions
