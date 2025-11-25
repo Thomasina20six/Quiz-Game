@@ -9,7 +9,7 @@ const restartButton = document.getElementById("restart-btn");
 
 const questionText = document.getElementById("question-text");
 const answersContainer = document.getElementById("answers-container");
-const progressBar = document.getElementById("progress");
+const dotsContainer = document.getElementById("pagination-dots");
 
 const currentQuestionSpan = document.getElementById("current-question");
 const totalQuestionsSpan = document.getElementById("total-questions");
@@ -98,6 +98,27 @@ function shuffle(arr){
   return a;
 }
 
+function renderDots() {
+  if (!dotsContainer) return;
+  dotsContainer.innerHTML = "";
+
+  for (let i = 0; i < quizQuestions.length; i++) {
+    const dot = document.createElement("div");
+    dot.classList.add("pagination-dot");
+    if (i === currentQuestionIndex) {
+      dot.classList.add("active");
+    }
+    dotsContainer.appendChild(dot);
+  }
+}
+
+function updateActiveDot() {
+  if (!dotsContainer) return;
+  Array.from(dotsContainer.children).forEach((dot, index) => {
+    dot.classList.toggle("active", index === currentQuestionIndex);
+  });
+}
+
 async function getQuizFromApi({topic = "", difficulty = "medium", count = COUNT} ={}){
   const url = new URL(API_URL, window.location.origin);
   if(topic) url.searchParams.set("topic", topic); //get random topic
@@ -123,7 +144,6 @@ async function startQuiz(){
   currentQuestionIndex=0;
   score=0;
   scoreSpan.textContent=0;
-  progressBar.style.width ="0%";
 
   // 1) Show topic screen
   //const topicThisRun = DEFAULT_TOPIC;
@@ -158,8 +178,9 @@ async function startQuiz(){
   setTimeout(() => {
     topicScreen.classList.remove("active");
     quizScreen.classList.add("active");
+    renderDots();   
     showQuestion();
-  }, 3000); //650
+  }, 3000);
 }
 
 function showQuestion(){
@@ -169,9 +190,7 @@ function showQuestion(){
   const currentQuestion = quizQuestions[currentQuestionIndex];
   currentQuestionSpan.textContent = currentQuestionIndex + 1;
 
-  //fills the progress bar
-  const progressPercent=(currentQuestionIndex / quizQuestions.length) * 100;
-  progressBar.style.width = progressPercent + "%"; // change bar css width value to %
+  updateActiveDot();
 
   questionText.textContent = currentQuestion.question
   answersContainer.innerHTML = ""; //clear the answer container
