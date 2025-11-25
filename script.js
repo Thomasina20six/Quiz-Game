@@ -23,7 +23,7 @@ const topicChip = document.getElementById("topic-chip");
 const topicSub = document.getElementById("topic-sub");
 // --- Config ---
 const API_URL = "http://localhost:3000/api/quiz"; // or "/api/quiz" if you serve index.html from Express
-const COUNT = 3; // always 3 questions
+const COUNT = 5;
 
 // Quiz questions
 const FALLBACK_QUESTIONS = [
@@ -54,6 +54,24 @@ const FALLBACK_QUESTIONS = [
       { text: "Edwin Hubble", correct: false },
     ],
   },
+  {
+    question: "What is the name of the point at the very center of a black hole?",
+    answers: [
+      { text: "Event Horizon", correct: false },
+      { text: "Singularity", correct: true },
+      { text: "Photon Ring", correct: false },
+      { text: "Accretion Disc", correct: false }
+    ]
+  },
+  {
+    question: "Which type of black hole is formed from the collapse of a massive star?",
+    answers: [
+      { text: "Primordial Black Hole", correct: false },
+      { text: "Stellar-Mass Black Hole", correct: true },
+      { text: "Supermassive Black Hole", correct: false },
+      { text: "Mini Black Hole", correct: false }
+    ]
+  }
 ];
 
 //quiz state vars
@@ -110,8 +128,8 @@ async function startQuiz(){
   progressBar.style.width ="0%";
 
   // 1) Show topic screen
-  const topicThisRun = DEFAULT_TOPIC;
-  topicChip.textContent = topicThisRun;
+  //const topicThisRun = DEFAULT_TOPIC;
+  topicChip.textContent = "Choosing a topic...";
   topicSub.textContent= `Generating ${COUNT} questions...`; 
 
   //chnage into quiz display
@@ -122,9 +140,13 @@ async function startQuiz(){
 
   // 2) Generate with graceful fallback
   try{
-    quizQuestions = await getQuizFromApi({topic:topicThisRun, count: COUNT});
+    //quizQuestions = await getQuizFromApi({topic:topicThisRun, count: COUNT});
+    const {topic, questions} = await getQuizFromApi({count: COUNT});
+    topicChip.textContent = topic; // show chosen topic
+    quizQuestions = questions;
   } catch (e){
-    console.warn("Falling back to local Black-hole set:", e);
+    console.warn("Falling back to local set:", e);
+    topicChip.textContent = "Black Holes"; // fallback topic
     quizQuestions = FALLBACK_QUESTIONS
   }
 
